@@ -1,0 +1,25 @@
+class ChatsController < ApplicationController
+  before_action :authenticate_user!
+
+  def index
+    @chats = Chat.includes(:attachments).order(created_at: :asc)
+    @chat = Chat.new
+  end
+
+  def create
+    @chat = current_user.chats.build(chat_params)
+    if @chat.save
+      redirect_to root_path
+    else
+      @chats = Chat.includes(:attachments).order(created_at: :asc)
+      flash.now[:alert] = "Oops, something went wrong. Please try again."
+      render :index
+    end
+  end
+
+  private
+
+  def chat_params
+    params.require(:chat).permit(:content, :sender_type, attachments_attributes: [:file, :file_type])
+  end
+end
