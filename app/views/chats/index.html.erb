@@ -1,2 +1,43 @@
-<h1>Chats#index</h1>
-<p>Find me in app/views/chats/index.html.erb</p>
+<h1>Ivy</h1>
+<h5>Hi <%= current_user.full_name %></h5>
+<p>I am your personal assistant, ask me anything!</p>
+
+<%= simple_form_for @chat, url: chats_path do |f| %>
+  <div>
+    <%= f.input :content, as: :text, input_html: { rows: 3, placeholder: "Type your message to Ivy..." } %>
+  </div>
+  <div>
+    <%= f.button :submit, "Send" %>
+  </div>
+<% end %>
+
+<div id="chat-container" style="max-height: 400px; overflow-y: auto; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
+  <% @chats.last(10).each do |chat| %> <!-- only last 10 messages -->
+    <div class="chat-box" style="padding: 0.5rem 1rem; margin-bottom: 1rem; border-radius: 12px; background: #f0f0f0;">
+      
+      <!-- User message -->
+      <div style="margin-bottom: 0.5rem;">
+        <strong>You:</strong>
+        <span><%= chat.content %></span>
+      </div>
+      
+      <!-- Ivy response -->
+      <div style="margin-left: 1rem; background: #d1e7ff; padding: 0.5rem; border-radius: 8px;">
+        <strong>Ivy:</strong>
+        <% if chat.response.present? %>
+          <span><%= chat.response %></span>
+        <% else %>
+          <em>Ivy is thinking...</em>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  // Scroll to the bottom automatically
+  const chatContainer = document.getElementById('chat-container');
+  if (chatContainer) {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+</script>

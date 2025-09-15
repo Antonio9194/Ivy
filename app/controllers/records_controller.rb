@@ -7,30 +7,21 @@ class RecordsController < ApplicationController
     @record = Record.find(params[:id])
   end
 
-  def create
-    @chat = current_user.chats.build(chat_params)
-    @record = Record.new
-    if @record.save
-      redirect_to root_path
-    else
-      flash.now[:alert] = "Oops, something went wrong. Please try again"
-      render :index
-    end
-  end
 
   def update
     @record = Record.find(params[:id])
-    
+    if @record.update(record_params)
+      redirect_to records_path, notice: "Record updated successfully."
+    else
+      flash.now[:alert] = "Failed to update record."
+      render :show
+    end
   end
 
   def destroy
     @record = Record.find(params[:id])
     @record.destroy
-    if @record.save
-      redirect_to records_path
-    else
-      flash.now[:alert] = "Oops, somethign went wrong. Please try again"
-    end
+    redirect_to records_path, notice: "Record deleted successfully."
   end
 
   private
