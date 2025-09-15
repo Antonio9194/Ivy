@@ -6,16 +6,29 @@ class ChatsController < ApplicationController
     @chat = Chat.new
   end
 
-  def create
-    @chat = current_user.chats.build(chat_params)
-    if @chat.save
-      redirect_to root_path
-    else
-      @chats = Chat.includes(:attachments).order(created_at: :asc)
-      flash.now[:alert] = "Oops, something went wrong. Please try again."
-      render :index
+def create
+  @chat = Chat.new(chat_params)
+  @chat.user = current_user
+
+  if @chat.save
+    # Automatically create a record if chat starts with "Ivy please remember"
+    if @chat.content.downcase.start_with?("ivy please remember")
+      record_content = @chat.content.sub(/^Ivy please remember/i, "").strip
+      Record.create(
+        title: "Note from chat",
+        description: record_content,
+        status: "pending",
+        user: current_user
+      )
     end
+
+    redirect_to root_path
+  else
+    @chats = Chat.includes(:attachments).order(:created_at)
+    flash.now[:alert] = "Oops, something went wrong. Please try again."
+    render :index
   end
+end
 
   private
 

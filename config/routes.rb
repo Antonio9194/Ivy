@@ -1,6 +1,4 @@
 Rails.application.routes.draw do
-  get 'chats/index'
-  get 'chats/create'
   devise_for :users
 
   root to: "chats#index"  # dashboard as the homepage
