@@ -11,17 +11,7 @@ def create
   @chat.user = current_user
 
   if @chat.save
-    # Automatically create a record if chat starts with "Ivy please remember"
-    if @chat.content.downcase.start_with?("ivy please remember")
-      record_content = @chat.content.sub(/^Ivy please remember/i, "").strip
-      Record.create(
-        title: "Note from chat",
-        description: record_content,
-        status: "pending",
-        user: current_user
-      )
-    end
-
+    GenerateRecordFromChatJob.perform_later(@chat)  # queue the AI processing
     redirect_to root_path
   else
     @chats = Chat.includes(:attachments).order(:created_at)
