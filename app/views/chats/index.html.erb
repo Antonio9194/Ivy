@@ -1,5 +1,5 @@
 <h1>Ivy</h1>
-<h5>Hi <%= current_user.full_name %></h5>
+<h5>Hi <%= current_user.name %></h5>
 <p>I am your personal assistant, ask me anything!</p>
 
 <%= simple_form_for @chat, url: chats_path do |f| %>
@@ -12,7 +12,7 @@
 <% end %>
 
 <div id="chat-container" style="max-height: 400px; overflow-y: auto; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
-  <% @chats.last(10).each do |chat| %> <!-- only last 10 messages -->
+  <% @chats.each do |chat| %> <!-- only last 10 messages -->
     <div class="chat-box" style="padding: 0.5rem 1rem; margin-bottom: 1rem; border-radius: 12px; background: #f0f0f0;">
       
       <!-- User message -->
