@@ -7,71 +7,29 @@ class ChatsController < ApplicationController
     @chat = Chat.new
   end
 
-  # Handle new chat submission
-  def create
-    @chat = Chat.new(chat_params)
-    @chat.user = current_user
+# Handle new chat submission
+def create
+  @chat = current_user.chats.new(chat_params)
 
+  respond_to do |format|
     if @chat.save
-      # Build conversation history to feed to AI
-      chat_history = current_user.chats.order(:created_at).map do |c|
-        "#{c.sender_type || 'You'}: #{c.content}\nIvy: #{c.response}"
-      end.join("\n")
+      # Enqueue Ivy’s response generation in background
+      IvyAnswerJob.perform_later(@chat.id)
 
-      # Prompt for AI
-      prompt = <<~PROMPT
-        You are Ivy, a helpful assistant that answers the user in natural language
-        and also extracts key tasks as JSON.
-
-        Conversation so far:
-        #{chat_history}
-
-        Latest user message:
-        "#{@chat.content}"
-
-        Output format:
-        {
-          "response_text": "Human-readable answer to user",
-          "title": "...",
-          "description": "...",
-          "status": "..."
-        }
-      PROMPT
-      puts "Sending prompt to RubyLLM:"
-puts prompt
-
-      # Call the AI
-      chat_ai = RubyLLM.chat
-      response = chat_ai.ask(prompt)
-      output = response.content
-            puts "Received response from RubyLLM:"
-puts output
-
-      # Parse AI output
-      parsed = JSON.parse(output) rescue nil
-      if parsed
-        # Update chat with Ivy's response
-        @chat.update(response: parsed["response_text"])
-
-        # Create structured Record
-        Record.create!(
-          title: parsed["title"],
-          description: parsed["description"],
-          status: parsed["status"] || "pending",
-          user: current_user
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.append(
+          "chat-container",
+          partial: "chats/chat",
+          locals: { chat: @chat }
         )
       end
-
-      # Reload chats for index view
-      @chats = current_user.chats.includes(:attachments).order(created_at: :asc)
-
-      render :index
+      format.html { redirect_to chats_path }
     else
-      @chats = current_user.chats.includes(:attachments).order(created_at: :asc)
-      flash.now[:alert] = "Oops, something went wrong. Please try again."
-      render :index
+      format.turbo_stream { render :index, status: :unprocessable_entity }
+      format.html { render :index, status: :unprocessable_entity }
     end
   end
+end
 
   private
 
