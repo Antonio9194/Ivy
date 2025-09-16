@@ -1,13 +1,15 @@
 <div class="container my-5">
-  <h1 class="text-center mb-4">Records</h1>
+  <div class="text-center mb-4">
+    <h1 class="display-4 fw-bold">Records</h1>
+  </div>
 
   <div class="row justify-content-center">
     <% @records.each do |record| %>
       <div class="col-md-6 mb-4">
-        <div class="card shadow-sm border-0 rounded-4">
-          <div class="card-body">
-            <h5 class="card-title fw-bold"><%= record.title %></h5>
-            <p class="card-text text-muted"><%= record.description %></p>
+        <div class="card shadow-sm rounded-4 overflow-hidden">
+          <div class="card-body bg-white p-4">
+            <h5 class="fw-bold"><%= record.title %></h5>
+            <p class="text-muted mb-3"><%= record.description %></p>
             <p class="text-end text-secondary mb-0" style="font-size: 0.85rem;">
               Created at: <%= record.created_at.strftime("%b %d, %Y %I:%M %p") %>
             </p>

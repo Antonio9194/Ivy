@@ -1,21 +1,28 @@
-<h1>Ivy</h1>
-<h5>Hi <%= current_user.name %></h5>
-<p>I am your personal assistant, ask me anything!</p>
-
-<%= simple_form_for @chat, url: chats_path,
-    data: { controller: "reset-form",
-    action: "turbo:submit-end->reset-form#reset"
-    } do |f| %>
-  <div>
-    <%= f.input :content, as: :text, input_html: { rows: 3, placeholder: "Type your message to Ivy..." } %>
+<div class="container my-5">
+  <div class="text-center mb-4">
+    <h1 class="display-4 fw-bold">Ivy</h1>
+    <h5 class="text-secondary">Hi <%= current_user.name %> 👋</h5>
+    <p class="lead text-muted">I am your personal assistant, ask me anything!</p>
   </div>
-  <div>
-    <%= f.button :submit, "Send" %>
+
+  <div class="card shadow-sm rounded-4" style="max-width: 600px; margin: auto;">
+    <!-- Chat messages -->
+    <div id="chat-container" class="p-3" style="max-height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+      <%= render partial: "chat", collection: @chats.last(3), as: :chat %>
+    </div>
+
+    <!-- Input form -->
+    <div class="card-footer bg-white border-0" style="border-radius: 20px 20px 0 0;">
+      <%= simple_form_for @chat, url: chats_path,
+          data: { controller: "reset-form",
+                  action: "turbo:submit-end->reset-form#reset" } do |f| %>
+        <div class="input-group">
+          <%= f.text_area :content, rows: 2, placeholder: "Type your message to Ivy...", class: "form-control rounded-pill" %>
+          <button class="btn rounded-pill ms-2" type="submit" style="color: black; background-color: gold;">Send</button>
+        </div>
+      <% end %>
+    </div>
   </div>
-<% end %>
 
-<%= turbo_stream_from "user_#{current_user.id}_chats" %>
-
-<div id="chat-container" style="max-height: 400px; overflow-y: auto; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
-  <%= render partial: "chat", collection: @chats.last(3), as: :chat %>
+  <%= turbo_stream_from "user_#{current_user.id}_chats" %>
 </div>
