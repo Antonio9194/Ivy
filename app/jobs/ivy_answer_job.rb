@@ -10,13 +10,28 @@ class IvyAnswerJob < ApplicationJob
       "#{c.sender_type || 'You'}: #{c.content}\nIvy: #{c.response}"
     end.join("\n")
 
-    # Prompt for AI
+    # Include user's previous records
+    records_info = user.records.order(:created_at).map do |r|
+      "Title: #{r.title}, Description: #{r.description}, Status: #{r.status}"
+    end.join("\n")
+
+    # Include attachments from this chat
+    attachments_info = chat.attachments.map do |a|
+      "#{a.photo.filename}" if a.photo.attached?
+    end.compact.join(", ")
+
     prompt = <<~PROMPT
       You are Ivy, a helpful assistant that answers the user in natural language
       and also extracts key tasks as JSON.
 
       Conversation so far:
       #{chat_history}
+
+      User's previous records:
+      #{records_info}
+
+      Attachments in this message:
+      #{attachments_info}
 
       Latest user message:
       "#{chat.content}"
@@ -30,18 +45,13 @@ class IvyAnswerJob < ApplicationJob
       }
     PROMPT
 
-    # Call the AI
     chat_ai = RubyLLM.chat
     response = chat_ai.ask(prompt)
     output = response.content
 
-    # Parse AI output
     parsed = JSON.parse(output) rescue nil
     if parsed
-      # Update chat with Ivy's response
       chat.update(response: parsed["response_text"])
-
-      # Create structured Record
       Record.create!(
         title: parsed["title"],
         description: parsed["description"],

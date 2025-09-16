@@ -14,6 +14,7 @@ gem "ruby-openai"
 gem "ruby_llm"
 gem "solid_queue"
 gem "solid_cable"
+gem "cloudinary"
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"

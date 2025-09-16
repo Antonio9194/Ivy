@@ -5,6 +5,7 @@ class ChatsController < ApplicationController
   def index
     @chats = current_user.chats.includes(:attachments).order(created_at: :asc)
     @chat = Chat.new
+    @chat.attachments.build
   end
 
 # Handle new chat submission
@@ -34,6 +35,6 @@ end
   private
 
   def chat_params
-    params.require(:chat).permit(:content, :sender_type, attachments_attributes: [:file, :file_type])
+    params.require(:chat).permit(:content, :sender_type, attachments_attributes: [:file, :file_type, :photo])
   end
 end

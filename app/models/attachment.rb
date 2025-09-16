@@ -1,5 +1,6 @@
 class Attachment < ApplicationRecord
   belongs_to :chat
+  has_one_attached :photo
 
-  validates :file, presence: true
+  validates :photo, presence: true
 end

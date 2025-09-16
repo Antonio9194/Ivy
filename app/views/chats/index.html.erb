@@ -4,25 +4,32 @@
     <h5 class="text-secondary">Hi <%= current_user.name %> 👋</h5>
     <p class="lead text-muted">I am your personal assistant, ask me anything!</p>
   </div>
-
   <div class="card shadow-sm rounded-4" style="max-width: 600px; margin: auto;">
     <!-- Chat messages -->
     <div id="chat-container" class="p-3" style="max-height: 400px; overflow-y: auto; background-color: #f8f9fa;">
       <%= render partial: "chat", collection: @chats.last(3), as: :chat %>
     </div>
-
     <!-- Input form -->
     <div class="card-footer bg-white border-0" style="border-radius: 20px 20px 0 0;">
-      <%= simple_form_for @chat, url: chats_path,
-          data: { controller: "reset-form",
-                  action: "turbo:submit-end->reset-form#reset" } do |f| %>
+      <%= simple_form_for @chat, url: chats_path, html: { multipart: true },
+    data: { controller: "reset-form", action: "turbo:submit-end->reset-form#reset" } do |f| %>
         <div class="input-group">
           <%= f.text_area :content, rows: 2, placeholder: "Type your message to Ivy...", class: "form-control rounded-pill" %>
+          <!-- File upload button -->
+          <%= f.fields_for :attachments do |af| %>
+            <label class="btn rounded-pill ms-2 d-flex align-items-center justify-content-center"
+             style="color: black; background-color: gold; cursor: pointer; padding: 0 20px; height: 65px;">
+              <%= image_tag "upload.gif", style: "height: 20px; width: 20px;" %>
+              <span class="ms-2">Upload</span>
+              <%= af.file_field :photo, class: "d-none" %>
+            </label>
+          <% end %>
           <button class="btn rounded-pill ms-2" type="submit" style="color: black; background-color: gold;">Send</button>
         </div>
       <% end %>
+      <div class="d-inline-block ms-2">
+      </div>
     </div>
   </div>
-
   <%= turbo_stream_from "user_#{current_user.id}_chats" %>
 </div>
