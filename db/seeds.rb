@@ -1,4 +1,15 @@
-User.find_or_create_by!(email: "ivy@system.local") do |user|
-  user.full_name = "Ivy"
-  user.password = SecureRandom.hex(10)
-end
+# db/seeds.rb
+
+puts "Destroying everything..."
+Record.destroy_all
+Chat.destroy_all
+User.destroy_all
+
+puts "Creating Ivy..."
+User.create!(
+  email: "ivy@system.local",
+  name: "Ivy",
+  password: SecureRandom.hex(10)
+)
+
+puts "Done!"
