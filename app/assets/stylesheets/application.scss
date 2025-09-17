@@ -10,3 +10,15 @@
 // Your CSS partials
 @import "components/index";
 @import "pages/index";
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+// Make images and videos responsive globally
+img, video {
+  max-width: 100%;
+  height: auto;
+}
