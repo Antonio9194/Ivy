@@ -44,10 +44,21 @@ class IvyAnswerJob < ApplicationJob
         "status": "..."
       }
     PROMPT
+    
+    # chat_ai = RubyLLM.chat
+    # response = chat_ai.ask(prompt)
+    # output = response.content
 
-    chat_ai = RubyLLM.chat
-    response = chat_ai.ask(prompt)
-    output = response.content
+
+    client = OpenAI::Client.new
+       response = client.chat(
+      parameters: {
+        model: "gpt-4o-mini", # or "gpt-4.1", depending on what you want
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7
+      }
+    )
+    output = response.dig("choices", 0, "message", "content")
 
     parsed = JSON.parse(output) rescue nil
     if parsed
