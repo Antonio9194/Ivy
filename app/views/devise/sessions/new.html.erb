@@ -1,0 +1,23 @@
+<div class="ivy-container d-flex flex-column" style="height: calc(100vh - 150px); width: 90%; max-width: 400px; margin: 0 auto;">
+  <!-- Top Ivy logo/name -->
+  <div class="text-center mt-3">
+    <h2 class="ivy-auth text-secondary">
+      I am Ivy <%= image_tag "ivy.png", style: "width: 30px; height: 30px" %>
+    </h2>
+  </div>
+
+  <!-- Auth panel at bottom -->
+  <div class="auth-panel" style="margin-top: 50%;">
+    <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+      <div class="form-group mb-3">
+        <%= f.input_field :email, autofocus: true, placeholder: "Email", class: "form-control auth-input", style: "border-radius: 20px;" %>
+      </div>
+
+      <div class="form-group mb-3">
+        <%= f.input_field :password, placeholder: "Password", class: "form-control auth-input", style: "border-radius: 20px;" %>
+      </div>
+
+      <%= f.button :submit, "Log in", class: "auth-submit w-100", style: "border: 1px solid black; border-radius: 20px; background-color: #1c1c1c; color: white;" %>
+    <% end %>
+  </div>
+</div>

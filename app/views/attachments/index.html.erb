@@ -1,0 +1,37 @@
+<div class="container my-5">
+  <div class="text-center mb-4">
+    <h1 class="display-4 fw-bold">Files</h1>
+  </div>
+  <div class="row justify-content-center">
+    <% @attachments.each do |attachment| %>
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm rounded-4 overflow-hidden h-100">
+          <div class="card-body bg-white p-1">
+            <div class="media-wrapper d-flex justify-content-center align-items-center mb-3"
+                 style="width: 300px; height: 300px; margin: 0 auto;">
+              <% if attachment.photo.attached? %>
+                <div class="media-wrapper d-flex justify-content-center align-items-center mb-3"
+       style="width: 300px; height: 300px; margin: 0 auto;">
+                  <% if attachment.photo.image? %>
+                    <%= image_tag attachment.photo,
+          class: "img-fluid rounded",
+          style: "max-width: 100%; max-height: 100%;" %>
+                  <% end %>
+                </div>
+                <%= link_to "Download #{attachment.photo.filename}",
+            download_attachment_path(attachment),
+            class: "btn w-100",
+            style: "background-color: gold; border: 2px solid black; border-radius: 20px;" %>
+              <% end %>
+              <%= link_to "Delete", attachment_path(attachment), data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } %>
+            </div>
+            <h5 class="fw-bold"><%= attachment.file_type %></h5>
+            <p class="text-end text-secondary mb-0" style="font-size: 0.85rem;">
+              Created at: <%= attachment.created_at.strftime("%b %d, %Y %I:%M %p") %>
+            </p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

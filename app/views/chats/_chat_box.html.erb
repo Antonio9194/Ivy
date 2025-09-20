@@ -1,0 +1,17 @@
+<div id="chat_<%= chat.id %>" class="chat-box" style="padding: 0.5rem 1rem; margin-bottom: 1rem; border-radius: 12px; background: #f0f0f0;">
+  <!-- User message -->
+  <div style="margin-bottom: 0.5rem;">
+    <strong>You:</strong>
+    <span><%= chat.content %></span>
+  </div>
+
+  <!-- Ivy response -->
+  <div style="margin-left: 1rem; background: #d1e7ff; padding: 0.5rem; border-radius: 8px;">
+    <strong>Ivy:</strong>
+    <% if chat.response.present? %>
+      <span><%= chat.response %></span>
+    <% else %>
+      <em>Ivy is thinking...</em>
+    <% end %>
+  </div>
+</div>
