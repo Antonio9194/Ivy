@@ -1,6 +1,10 @@
 class CalendarEventsController < ApplicationController
+  before_action :authenticate_user!
   def index
-    @calendar_events = current_user.calendar_events.order(:start_time)
+    start_date = params.fetch(:start_date, Date.today).to_date
+    @calendar_events = current_user.calendar_events.where(
+      start_time: start_date.beginning_of_month.beginning_of_week..start_date.end_of_month.end_of_week
+    ).order(:start_time)
   end
 
   def show

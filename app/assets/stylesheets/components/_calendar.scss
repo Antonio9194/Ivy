@@ -1,0 +1,18 @@
+.day-cell {
+  background-color: #f8f9fa;
+  transition: background-color 0.2s ease;
+}
+
+.day-cell.has-events {
+  background-color: #d1e7dd;
+  font-weight: 600;
+}
+
+.event-pill {
+  background-color: gold;
+  color: white;
+  padding: 8px 8px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
