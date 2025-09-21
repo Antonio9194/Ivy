@@ -20,6 +20,12 @@ class IvyAnswerJob < ApplicationJob
       "#{a.photo.filename}" if a.photo.attached?
     end.compact.join(", ")
 
+    # Include user's previous calendar events
+    events_info = user.calendar_events.order(:start_time).map do |e|
+      "Title: #{e.title}, Description: #{e.description}, Start: #{e.start_time.strftime('%b %d, %Y %H:%M')}, End: #{e.end_time ? e.end_time.strftime('%b %d, %Y %H:%M') : 'N/A'}"
+    end.join("\n")
+
+    # Build AI prompt
     prompt = <<~PROMPT
       You are Ivy, a helpful assistant that answers the user in natural language
       and also extracts key tasks as JSON.
@@ -33,6 +39,9 @@ class IvyAnswerJob < ApplicationJob
       Attachments in this message:
       #{attachments_info}
 
+      Calendar events:
+      #{events_info}
+
       Latest user message:
       "#{chat.content}"
 
@@ -41,33 +50,48 @@ class IvyAnswerJob < ApplicationJob
         "response_text": "Human-readable answer to user",
         "title": "...",
         "description": "...",
-        "status": "..."
+        "status": "...",
+        "start_time": "... (ISO 8601 format, optional if reminder)",
+        "end_time": "... (ISO 8601 format, optional)",
+        "alert": "... (optional reminder text)"
       }
     PROMPT
-    
-    # chat_ai = RubyLLM.chat
-    # response = chat_ai.ask(prompt)
-    # output = response.content
 
-
+    # Call OpenAI API
     client = OpenAI::Client.new
-       response = client.chat(
+    response = client.chat(
       parameters: {
-        model: "gpt-4o-mini", # or "gpt-4.1", depending on what you want
+        model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7
       }
     )
     output = response.dig("choices", 0, "message", "content")
-
     parsed = JSON.parse(output) rescue nil
-    if parsed
-      chat.update(response: parsed["response_text"])
+    return unless parsed
+
+    # Update chat with AI response
+    chat.update(response: parsed["response_text"])
+
+    # Create record if info exists
+    if parsed["title"].present?
       Record.create!(
         title: parsed["title"],
         description: parsed["description"],
         status: parsed["status"] || "pending",
         user: user
+      )
+    end
+
+    # Enqueue calendar event if start_time is present
+    if parsed["start_time"].present? && parsed["title"].present?
+      SaveEventToCalendarJob.perform_later(
+        user.id,
+        title: parsed["title"],
+        description: parsed["description"],
+        start_time: parsed["start_time"],
+        end_time: parsed["end_time"],
+        alert: parsed["alert"]
       )
     end
   end

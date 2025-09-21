@@ -1,6 +1,6 @@
 class CalendarEventsController < ApplicationController
   def index
-    @calendar_events = current_user.calendar_events.all
+    @calendar_events = current_user.calendar_events.order(:start_time)
   end
 
   def show
