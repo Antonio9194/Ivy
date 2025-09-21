@@ -1,0 +1,19 @@
+<div class="chat-container d-flex flex-column" style="min-height: 100vh; width: 95%; max-width: 500px; margin: 0 auto;">
+  <h1 class="text-center mb-4">🌿 Ivy Calendar</h1>
+
+  <div class="card shadow-lg border-0 rounded-4" style="margin-top: 100px;">
+    <div class="card-body p-3">
+      <%= month_calendar events: @calendar_events do |date, events| %>
+        <div class="day-cell p-2 mb-1 rounded-3 <%= 'bg-light text-muted' if date.month != Date.today.month %>">
+          <strong><%= date.day %></strong>
+
+          <% events.each do |event| %>
+            <div class="event-pill mt-1">
+              <%= link_to event.title, calendar_event_path(event), class: "btn btn-sm btn-success w-100 text-start text-truncate" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

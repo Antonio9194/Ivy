@@ -10,10 +10,16 @@
       <ul class="navbar-nav me-auto">
         <% if user_signed_in? %>
           <li class="nav-item active">
-            <%= link_to "Records", records_path, class: "nav-link" %>
+            <%= link_to calendar_events_path, class: "nav-link" do %>
+            <%= image_tag "calendar.png", style: "width: 20px; height: 20px;" %>
+            Calendar
+            <% end %>
           </li>
           <li class="nav-item active">
-            <%= link_to "Files", attachments_path, class: "nav-link" %>
+            <%= link_to attachments_path, class: "nav-link" do %>
+            <%= image_tag "files.png", style: "width: 23px; height: 23px;" %>
+            Files
+            <% end %>
           </li>
           <li class="nav-item">
             <%= link_to "Logout", destroy_user_session_path,

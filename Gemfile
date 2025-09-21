@@ -16,6 +16,10 @@ gem "solid_queue"
 gem "solid_cable"
 gem "cloudinary"
 
+# Calendar
+gem "simple_calendar"
+
+
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 

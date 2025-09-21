@@ -6,6 +6,7 @@ class User < ApplicationRecord
 
   has_many :chats, dependent: :destroy
   has_many :records, dependent: :destroy
+  has_many :calendar_events, dependent: :destroy
   has_many :attachments, through: :chats
 
   validates :name, presence: true
