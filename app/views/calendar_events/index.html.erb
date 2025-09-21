@@ -9,11 +9,11 @@
   <div class="card shadow-lg border-0" style="margin-top: 80px; border-radius: 20px;">
     <div class="card-body p-4">
       <%= month_calendar(events: @calendar_events, attribute: :start_time, end_attribute: :end_time) do |date, events| %>
-        <div class="day-cell p-2 rounded-3 <%= 'bg-light text-muted' if date.month != Date.today.month %> <%= 'has-events' if events.any? %>">
+        <div class="day-cell">
           <strong><%= date.day %></strong>
           <% events.each do |event| %>
             <div class="event-pill mt-1">
-              <%= link_to @calendar_events.count, calendar_event_path(event), class: "text-decoration-none", style: "color: black;" %>
+              <%= link_to @calendar_events.count, calendar_event_path(event), class: "text-decoration-none", style: "color: white;" %>
             </div>
           <% end %>
         </div>

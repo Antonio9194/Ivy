@@ -1,18 +1,45 @@
-.day-cell {
-  background-color: #f8f9fa;
-  transition: background-color 0.2s ease;
+.month_calendar {
+  width: 100%;
+  table-layout: fixed; /* makes all columns equal width */
+  font-size: 0.75rem;
+  border-collapse: separate;
+  border-spacing: 3px;
 }
 
-.day-cell.has-events {
-  background-color: #d1e7dd;
-  font-weight: 600;
+.month_calendar td {
+  background-color: transparent;
+  padding: 1px;
+  width: 14.28%; /* 7 columns = ~14.28% each */
+}
+
+.day-cell {
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 8px;
+  padding: 4px;
+  text-align: center;
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .event-pill {
-  background-color: gold;
-  color: white;
-  padding: 8px 8px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  background-color: black;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.7rem;
   margin-top: 2px;
+  color: white;
+}
+
+@media (max-width: 400px) {
+  .day-cell {
+    min-height: 35px;
+    padding: 2px;
+  }
+  .event-pill {
+    font-size: 0.65rem;
+    padding: 1px 4px;
+  }
 }
