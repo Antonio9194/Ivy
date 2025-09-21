@@ -1,20 +1,23 @@
 <div class="chat-container d-flex flex-column" style="height: calc(100vh - 150px); width: 90%; max-width: 450px; margin: 0 auto;">
-  <h1 class="text-center mb-4">🌿 Ivy Calendar</h1>
-
-  <div class="card shadow-lg border-0 rounded-4" style="margin-top: 80px;">
+  <!--Title -->
+  <div class="card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-2"
+     style="border: 1px solid black; border-radius: 20px; background-color: white; margin-top: 100px">
+    <%= image_tag "ivy.png", style: "width: 30px; height: 30px; margin-right: 15px;" %>
+    <h1 class="mb-0" style="font-size: 1.45rem; font-weight: 600;">Ivy Calendar</h1>
+  </div>
+  <!-- Calendar -->
+  <div class="card shadow-lg border-0" style="margin-top: 80px; border-radius: 20px;">
     <div class="card-body p-4">
       <%= month_calendar(events: @calendar_events, attribute: :start_time, end_attribute: :end_time) do |date, events| %>
-  <div class="day-cell p-2 rounded-3 <%= 'bg-light text-muted' if date.month != Date.today.month %> <%= 'has-events' if events.any? %>">
-    <strong><%= date.day %></strong>
-
-    <% events.each do |event| %>
-      <div class="event-pill mt-1">
-        <%= link_to @calendar_events.count, calendar_event_path(event), class: "text-decoration-none", style: "color: black;" %>
-      </div>
-    <% end %>
-  </div>
-<% end %>
+        <div class="day-cell p-2 rounded-3 <%= 'bg-light text-muted' if date.month != Date.today.month %> <%= 'has-events' if events.any? %>">
+          <strong><%= date.day %></strong>
+          <% events.each do |event| %>
+            <div class="event-pill mt-1">
+              <%= link_to @calendar_events.count, calendar_event_path(event), class: "text-decoration-none", style: "color: black;" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>
-

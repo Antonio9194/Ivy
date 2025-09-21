@@ -1,20 +1,21 @@
 <div class="chat-container d-flex flex-column" style="height: calc(100vh - 150px); width: 90%; max-width: 400px; margin: 0 auto;">
-
   <!-- Header -->
-  <div class="text-center mb-4">
-    <h5 class="text-dark">Hi <%= current_user.name %> 👋</h5>
-    <p class="text-dark">I am Ivy, your personal assistant!</p>
+  <div class="card shadow-lg border-0 d-flex flex-column justify-content-center align-items-center p-2"
+     style="border: 1px solid black; border-radius: 20px; background-color: white; margin-top: 100px">
+    <h5 class="mb-0" style="font-size: 1.45rem; font-weight: 600;">Hi <%= current_user.name %> 👋</h5>
   </div>
-
+  <div class="card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-2"
+     style="border: 1px solid black; border-radius: 20px; background-color: white; margin-top: 30px; margin-bottom: 30px;">
+    <%= image_tag "ivy.png", style: "width: 30px; height: 30px; margin-right: 15px;" %>
+    <p class="mb-0" style="font-size: 1.45rem; font-weight: 600;">I am Ivy, ask me anything!</p>
+  </div>
   <!-- Chat messages -->
   <div id="chat-container" class="chat-messages flex-grow-1 overflow-auto p-3" style="background: white;">
     <%= render partial: "chat", collection: @chats.last(50), as: :chat %>
   </div>
-
   <!-- Input form fixed at bottom -->
   <div class="chat-input" style="height: 60px; min-height: 60px; max-height: 60px; margin: 0;">
     <%= simple_form_for @chat, url: chats_path, html: { multipart: true, class: "d-flex align-items-center w-100", style: "height: 100%;" }, data: { controller: "reset-form", action: "turbo:submit-end->reset-form#reset" } do |f| %>
-
       <!-- Upload button -->
       <%= f.fields_for :attachments do |af| %>
         <label class="btn rounded-circle d-flex align-items-center justify-content-center me-2"
@@ -23,24 +24,19 @@
           <%= af.file_field :photo, class: "d-none" %>
         </label>
       <% end %>
-
       <!-- Chat textarea container -->
       <div class="textarea-container position-relative" style="flex: 1; height: 50px;">
-        <%= f.text_area :content, placeholder: "Ask anything...",
+        <%= f.text_area :content, placeholder: "Ask me anything...",
             class: "form-control rounded-pill",
             style: "height: 50px; min-height: 50px; max-height: 50px; width: 100%; padding-right: 60px; box-sizing: border-box; border: 1px solid #000; resize: none;" %>
-
         <!-- Send button inside textarea -->
         <%= button_tag type: "submit",
                class: "btn rounded-pill position-absolute d-flex justify-content-center align-items-center",
                style: "right: 5px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; color: white; background-color: black; border: 1px solid #000;" do %>
-  <i class="fa-solid fa-paper-plane"></i>
-<% end %>
+          <i class="fa-solid fa-paper-plane"></i>
+        <% end %>
       </div>
-
     <% end %>
   </div>
-
 </div>
-
 <%= turbo_stream_from "user_#{current_user.id}_chats" %>
