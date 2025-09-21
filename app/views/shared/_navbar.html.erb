@@ -9,38 +9,40 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto">
         <% if user_signed_in? %>
-          <li class="nav-item active card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-2"
-              style="border: 1px solid black; border-radius: 20px; background-color: white; margin-bottom: 8px; margin-right: 8px;">
+          <li class="nav-item active card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-1"
+              style="border: 1px solid black; border-radius: 20px; background-color: white; margin: 10px 10px;">
             <%= link_to calendar_events_path, class: "nav-link" do %>
-            <%= image_tag "calendar.png", style: "width: 20px; height: 20px;" %>
-            Calendar
+              <%= image_tag "calendar.png", style: "width: 20px; height: 20px;" %>
+              Calendar
             <% end %>
           </li>
-          <li class="nav-item active card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-2"
-              style="border: 1px solid black; border-radius: 20px; background-color: white; margin-bottom: 8px; margin-right: 8px;">
+          <li class="nav-item active card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-1"
+              style="border: 1px solid black; border-radius: 20px; background-color: white; margin: 10px 10px;">
             <%= link_to attachments_path, class: "nav-link" do %>
-            <%= image_tag "files.png", style: "width: 23px; height: 23px;" %>
-            Files
+              <%= image_tag "files.png", style: "width: 23px; height: 23px;" %>
+              Files
             <% end %>
           </li>
-          <li class="nav-item active card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-2"
-              style="border: 1px solid black; border-radius: 20px; background-color: white; margin-bottom: 8px; margin-right: 8px;">
+          <li class="nav-item active card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-1"
+              style="border: 1px solid black; border-radius: 20px; background-color: white; margin: 10px 10px;">
             <%= link_to destroy_user_session_path,
                 data: {turbo_method: :delete},
                 class: "nav-link" do
             %>
             <%= image_tag "logout.png", style: "width: 23px; height: 23px;" %>
             Logout
-            <% end %>
-          </li>
-        <% else %>
-          <% if current_page?(new_session_path(resource_name)) %>
-            <%= link_to "Sign Up", new_registration_path(resource_name), class: "nav-link" %>
-          <% elsif current_page?(new_registration_path(resource_name)) %>
-            <%= link_to "Login", new_session_path(resource_name), class: "nav-link" %>
           <% end %>
+        </li>
+      <% else %>
+        <% if current_page?(new_session_path(resource_name)) %>
+          <%= link_to "Sign Up", new_registration_path(resource_name), class: "nav-item active card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-1",
+                style: "border: 1px solid black; border-radius: 20px; background-color: white; margin: 10px 10px; text-decoration: none;" %>
+        <% elsif current_page?(new_registration_path(resource_name)) %>
+          <%= link_to "Login", new_session_path(resource_name), class: "nav-item active card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-1",
+                style: "border: 1px solid black; border-radius: 20px; background-color: white; margin: 10px 10px; text-decoration: none;" %>
         <% end %>
-      </ul>
-    </div>
+      <% end %>
+    </ul>
   </div>
+</div>
 </nav>
