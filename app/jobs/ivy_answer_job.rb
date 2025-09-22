@@ -5,94 +5,118 @@ class IvyAnswerJob < ApplicationJob
     chat = Chat.find(chat_id)
     user = chat.user
 
-    # Build conversation history
-    chat_history = user.chats.order(:created_at).map do |c|
-      "#{c.sender_type || 'You'}: #{c.content}\nIvy: #{c.response}"
-    end.join("\n")
+    # Generate a cache key for this chat
+    cache_key = "ai_response_for_chat_#{chat.id}"
 
-    # Include user's previous records
-    records_info = user.records.order(:created_at).map do |r|
-      "Title: #{r.title}, Description: #{r.description}, Status: #{r.status}"
-    end.join("\n")
+    # Try to fetch cached response first
+    response_text, parsed_json = Rails.cache.fetch(cache_key, expires_in: 6.hours) do
+      # Build conversation history
+      chat_history = user.chats.order(:created_at).map do |c|
+        "#{c.sender_type || 'You'}: #{c.content}\nIvy: #{c.response}"
+      end.join("\n")
 
-    # Include attachments from this chat
-    attachments_info = chat.attachments.map do |a|
-      "#{a.photo.filename}" if a.photo.attached?
-    end.compact.join(", ")
+      # Include user's previous records
+      records_info = user.records.order(:created_at).map do |r|
+        "Title: #{r.title}, Description: #{r.description}, Status: #{r.status}"
+      end.join("\n")
 
-    # Include user's previous calendar events
-    events_info = user.calendar_events.order(:start_time).map do |e|
-      "Title: #{e.title}, Description: #{e.description}, Start: #{e.start_time.strftime('%b %d, %Y %H:%M')}, End: #{e.end_time ? e.end_time.strftime('%b %d, %Y %H:%M') : 'N/A'}"
-    end.join("\n")
+      # Include attachments from this chat
+      attachments_info = chat.attachments.map do |a|
+        "#{a.photo.filename}" if a.photo.attached?
+      end.compact.join(", ")
 
-    # Build AI prompt
-    prompt = <<~PROMPT
-      You are Ivy, a helpful assistant that answers the user in natural language,
-      your job is to remember and store everything the user asks you to do,
-      and also extracts key tasks as JSON.
+      # Include user's previous calendar events
+      events_info = user.calendar_events.order(:start_time).map do |e|
+        "Title: #{e.title}, Description: #{e.description}, Start: #{e.start_time.strftime('%b %d, %Y %H:%M')}, End: #{e.end_time ? e.end_time.strftime('%b %d, %Y %H:%M') : 'N/A'}"
+      end.join("\n")
 
-      Conversation so far:
-      #{chat_history}
+      # Build AI prompt
+      prompt = <<~PROMPT
+        You are Ivy, a helpful assistant that answers the user in natural language,
+        your job is to remember and store everything the user asks you to do,
+        and also extract key tasks as JSON.
 
-      User's previous records:
-      #{records_info}
+        Conversation so far:
+        #{chat_history}
 
-      Attachments in this message:
-      #{attachments_info}
+        User's previous records:
+        #{records_info}
 
-      Calendar events:
-      #{events_info}
+        Attachments in this message:
+        #{attachments_info}
 
-      Latest user message:
-      "#{chat.content}"
+        Calendar events:
+        #{events_info}
 
-      Output format:
-      {
-        "response_text": "Human-readable answer to user",
-        "title": "...",
-        "description": "...",
-        "status": "...",
-        "start_time": "... (ISO 8601 format, optional if reminder)",
-        "end_time": "... (ISO 8601 format, optional)",
-        "alert": "... (optional reminder text)"
-      }
-    PROMPT
+        Latest user message:
+        "#{chat.content}"
 
-    # Call OpenAI API
-    client = OpenAI::Client.new
-    response = client.chat(
-      parameters: {
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7
-      }
-    )
-    output = response.dig("choices", 0, "message", "content")
-    parsed = JSON.parse(output) rescue nil
-    return unless parsed
+        Output format:
+        {
+          "response_text": "Human-readable answer to user",
+          "title": "...",
+          "description": "...",
+          "status": "...",
+          "start_time": "... (ISO 8601 format, optional)",
+          "end_time": "... (ISO 8601 format, optional)",
+          "alert": "... (optional reminder text)"
+        }
+      PROMPT
+
+      client = OpenAI::Client.new
+      output = nil
+      retries = 0
+
+      begin
+        response = client.chat(
+          parameters: {
+            model: "gpt-4o-mini",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7
+          }
+        )
+        output = response.dig("choices", 0, "message", "content")
+      rescue OpenAI::Error => e
+        if e.message.include?("429") && retries < 3
+          retries += 1
+          sleep(2 ** retries) # exponential backoff: 2s, 4s, 8s
+          retry
+        elsif e.message.include?("429")
+          Rails.logger.warn "Rate limited! Skipping AI call for chat #{chat.id}"
+          next [nil, nil] # cache nil to avoid retry storms
+        else
+          raise e
+        end
+      end
+
+      parsed = JSON.parse(output) rescue nil
+      [output, parsed]
+    end
+
+    return unless parsed_json && response_text
 
     # Update chat with AI response
-    chat.update(response: parsed["response_text"])
+    chat.update(response: parsed_json["response_text"])
 
     # Create record if info exists
-    if parsed["title"].present?
+    if parsed_json["title"].present?
       Record.create!(
-        title: parsed["title"],
-        description: parsed["description"],
-        status: parsed["status"] || "pending",
+        title: parsed_json["title"],
+        description: parsed_json["description"],
+        status: parsed_json["status"] || "pending",
         user: user
       )
     end
 
     # Enqueue calendar event if start_time is present
-    if parsed["start_time"].present? && parsed["title"].present?
+    if parsed_json["start_time"].present? && parsed_json["title"].present?
       SaveEventToCalendarJob.perform_later(
         user.id,
-        title: parsed["title"],
-        description: parsed["description"],
-        start_time: parsed["start_time"],
-        end_time: parsed["end_time"],
-        alert: parsed["alert"]
+        title: parsed_json["title"],
+        description: parsed_json["description"],
+        start_time: parsed_json["start_time"],
+        end_time: parsed_json["end_time"],
+        alert: parsed_json["alert"]
       )
     end
   end
