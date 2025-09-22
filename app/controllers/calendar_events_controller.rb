@@ -47,7 +47,7 @@ end
   def destroy
     @calendar_event = current_user.calendar_events.find(params[:id])
     @calendar_event.destroy
-    redirect_to calendar_events_path
+    redirect_to calendar_events_path, notice: "Event deleted!"
   end
 
   private

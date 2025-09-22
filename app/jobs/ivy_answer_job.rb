@@ -57,6 +57,8 @@ class IvyAnswerJob < ApplicationJob
       }
     PROMPT
 
+    sleep 1
+
     # Call OpenAI API
     client = OpenAI::Client.new
     response = client.chat(
