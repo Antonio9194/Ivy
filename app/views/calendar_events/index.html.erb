@@ -1,23 +1,59 @@
 <div class="chat-container d-flex flex-column" style="height: calc(100vh - 150px); width: 90%; max-width: 450px; margin: 0 auto;">
-  <!--Title -->
+  <!-- Title -->
   <div class="card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-2"
-     style="border: 1px solid black; border-radius: 20px; background-color: white; margin-top: 100px">
+       style="border: 1px solid black; border-radius: 20px; background-color: white; margin-top: 100px">
     <%= image_tag "ivy.png", style: "width: 30px; height: 30px; margin-right: 15px;" %>
     <h1 class="mb-0" style="font-size: 1.45rem; font-weight: 600;">Ivy Calendar</h1>
   </div>
+
   <!-- Calendar -->
-  <div class="card shadow-lg border-0" style="margin-top: 80px; border-radius: 20px;">
-    <div class="card-body p-4">
-      <%= month_calendar(events: @calendar_events, attribute: :start_time, end_attribute: :end_time) do |date, events| %>
-        <div class="day-cell">
-          <strong><%= date.day %></strong>
-          <% events.each do |event| %>
-            <div class="event-pill mt-1">
-              <%= link_to @calendar_events.count, calendar_event_path(event), class: "text-decoration-none", style: "color: white;" %>
+  <div class="calendar-container" style="margin-top: 20px; height: calc(100vh - 150px); overflow-y: auto; border-radius: 20px; background: white; padding: 20px;">
+    <% # Show 12 months starting from current month %>
+    <% (0..11).each do |i| %>
+      <% month = Date.today.beginning_of_month + i.months %>
+      <div class="month-block" style="margin-bottom: 40px;">
+        <h4 style="font-weight: 600; text-align: center; margin-bottom: 10px;">
+          <%= month.strftime("%B %Y") %>
+        </h4>
+
+        <!-- Days of week header -->
+        <div class="weekdays" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 500; margin-bottom: 5px; color: #777;">
+          <% Date::ABBR_DAYNAMES.each do |day| %>
+            <div><%= day %></div>
+          <% end %>
+        </div>
+
+        <!-- Month days -->
+        <div class="days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 5px;">
+          <% first_day = month.beginning_of_month.wday %>
+          <% last_day = month.end_of_month.day %>
+
+          <% # Empty cells before first day %>
+          <% first_day.times do %>
+            <div></div>
+          <% end %>
+
+          <% # Actual days %>
+          <% (1..last_day).each do |day| %>
+            <% current_date = Date.new(month.year, month.month, day) %>
+            <% day_events = @calendar_events.select { |event| event.start_time.to_date == current_date } %>
+
+            <div class="day-cell" style="position: relative; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; font-size: 0.9rem;
+                                         <%= 'background: #007AFF; color: white;' if current_date == Date.today %>">
+              <%= day %>
+
+              <% if day_events.any? %>
+                <!-- Event dots at bottom center -->
+                <div style="position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px;">
+                  <% day_events.each do |_event| %>
+                    <div class="event-dot" style="width: 6px; height: 6px; border-radius: 50%; background: black;"></div>
+                  <% end %>
+                </div>
+              <% end %>
             </div>
           <% end %>
         </div>
-      <% end %>
-    </div>
+      </div>
+    <% end %>
   </div>
-</div>
+</div>s

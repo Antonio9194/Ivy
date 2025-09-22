@@ -5,6 +5,19 @@ class IvyAnswerJob < ApplicationJob
     chat = Chat.find(chat_id)
     user = chat.user
 
+    # Handle "delete all events"
+    if chat.content.downcase.include?("delete all events")
+      user.calendar_events.destroy_all
+      chat.update(response: "Okay, I deleted all your events.")
+      return
+    end
+
+    # Handle "delete specific event"
+    if chat.content.downcase.include?("delete event")
+      # Parse out the event title from the AI output
+      # (we’ll reuse the parsed JSON from GPT below)
+    end
+
     # Build conversation history
     chat_history = user.chats.order(:created_at).map do |c|
       "#{c.sender_type || 'You'}: #{c.content}\nIvy: #{c.response}"
@@ -69,6 +82,18 @@ class IvyAnswerJob < ApplicationJob
     output = response.dig("choices", 0, "message", "content")
     parsed = JSON.parse(output) rescue nil
     return unless parsed
+
+    # Handle "delete specific event" after parsing
+    if chat.content.downcase.include?("delete event") && parsed["title"].present?
+      event = user.calendar_events.find_by("LOWER(title) = ?", parsed["title"].downcase)
+      if event
+        event.destroy
+        chat.update(response: "Okay, I deleted the event '#{parsed["title"]}'.")
+      else
+        chat.update(response: "I couldn’t find any event called '#{parsed["title"]}'.")
+      end
+      return
+    end
 
     # Update chat with AI response
     chat.update(response: parsed["response_text"])
