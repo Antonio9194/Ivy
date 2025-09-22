@@ -7,9 +7,14 @@ class CalendarEventsController < ApplicationController
     ).order(:start_time)
   end
 
-  def show
-    @calendar_event = current_user.calendar_events.find(params[:id])
-  end
+def show
+  @calendar_event = current_user.calendar_events.find(params[:id])
+
+  # Load all events for that same day
+  current_date = @calendar_event.start_time.to_date
+  @day_events = current_user.calendar_events
+                            .where(start_time: current_date.beginning_of_day..current_date.end_of_day)
+end
 
   def new
     @calendar_event = current_user.calendar_events.new

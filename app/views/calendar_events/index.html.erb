@@ -42,14 +42,18 @@
                                          <%= 'background: #007AFF; color: white;' if current_date == Date.today %>">
               <%= day %>
 
-              <% if day_events.any? %>
-                <!-- Event dots at bottom center -->
-                <div style="position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px;">
-                  <% day_events.each do |_event| %>
-                    <div class="event-dot" style="width: 6px; height: 6px; border-radius: 50%; background: black;"></div>
-                  <% end %>
-                </div>
-              <% end %>
+        <% if day_events.any? %>
+  <!-- Event dots at bottom center -->
+  <div style="position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px;">
+    <% day_events.each do |event| %>
+      <div class="event-dot" style="width: 6px; height: 6px;">
+        <h6 class="text-align-center">
+          <%= link_to day_events.count, calendar_event_path(event) %>
+        </h6>
+      </div>
+    <% end %>
+  </div>
+<% end %>
             </div>
           <% end %>
         </div>

@@ -1,2 +1,46 @@
-<h1>CalendarEvents#show</h1>
-<p>Find me in app/views/calendar_events/show.html.erb</p>
+<div class="chat-container d-flex flex-column" style="height: calc(100vh - 150px); width: 90%; max-width: 450px; margin: 0 auto;">
+  <!-- Title -->
+  <div class="card shadow-lg border-0 d-flex flex-row justify-content-center align-items-center p-2"
+       style="border: 1px solid black; border-radius: 20px; background-color: white; margin-top: 40px">
+    <%= image_tag "ivy.png", style: "width: 30px; height: 30px; margin-right: 15px;" %>
+    <h1 class="mb-0" style="font-size: 1.45rem; font-weight: 600;">Ivy Cal Events</h1>
+  </div>
+
+<div class="row justify-content-center mt-4" style="overflow: scroll; background-color: white; padding: 10px 0;">
+  <% @day_events.each do |event| %>
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-lg border-0 d-flex flex-column justify-content-center align-items-center p-3"
+           style="border: 1px solid black; border-radius: 20px; background-color: white; height: 100%;">
+
+        <!-- Event Title -->
+        <h5 style="font-weight: 600; margin-bottom: 8px;"><%= event.title %></h5>
+
+        <!-- Event Description -->
+        <% if event.description.present? %>
+          <p style="font-size: 0.9rem; color: #555; margin-bottom: 8px; text-align: center;">
+            <%= event.description %>
+          </p>
+        <% end %>
+
+        <!-- Event Time -->
+        <p style="font-size: 0.85rem; margin-bottom: 4px;">
+          <strong>Start:</strong> <%= event.start_time.strftime("%b %d, %Y %H:%M") %>
+        </p>
+        <% if event.end_time.present? %>
+          <p style="font-size: 0.85rem;">
+            <strong>End:</strong> <%= event.end_time.strftime("%b %d, %Y %H:%M") %>
+          </p>
+        <% end %>
+
+        <!-- Buttons -->
+        <%= link_to "Delete", calendar_event_path(event),
+                    data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
+                    class: "btn btn-danger w-100 mt-2",
+                    style: "border-radius: 20px; color: white; border: 2px solid black;" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+  </div>
+
+</div>
