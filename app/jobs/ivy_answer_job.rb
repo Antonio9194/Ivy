@@ -1,10 +1,7 @@
 class IvyAnswerJob < ApplicationJob
   queue_as :default
 
-  MAX_RETRIES = 5
-
   def perform(chat_id)
-    sleep 2
     chat = Chat.find(chat_id)
     user = chat.user
 
@@ -83,8 +80,7 @@ class IvyAnswerJob < ApplicationJob
       }
     PROMPT
 
-    # --- Call OpenAI API with retry/backoff ---
-    retries = 0
+    # --- Call OpenAI API ---
     begin
       client = OpenAI::Client.new
       response = client.chat(
@@ -97,18 +93,6 @@ class IvyAnswerJob < ApplicationJob
       output = response.dig("choices", 0, "message", "content")
       parsed = JSON.parse(output) rescue nil
       return unless parsed
-    rescue Faraday::TooManyRequestsError
-      retries += 1
-      if retries <= MAX_RETRIES
-        sleep_time = 2**retries
-        Rails.logger.info "429 received, retrying in #{sleep_time}s (attempt #{retries})..."
-        sleep(sleep_time)
-        retry
-      else
-        Rails.logger.error "IvyAnswerJob failed after #{MAX_RETRIES} retries due to rate limits."
-        chat.update(response: "Sorry, I’m busy right now. Please try again in a few seconds.")
-        return
-      end
     rescue StandardError => e
       Rails.logger.error "IvyAnswerJob failed: #{e.message}"
       chat.update(response: "Oops, something went wrong while processing your request.")
