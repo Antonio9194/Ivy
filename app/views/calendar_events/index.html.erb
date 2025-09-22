@@ -48,7 +48,7 @@
     <% day_events.each do |event| %>
       <div class="event-dot" style="width: 6px; height: 6px;">
         <h6 class="text-align-center">
-          <%= link_to day_events.count, calendar_event_path(event) %>
+          <%= link_to day_events.count, calendar_event_path(event), style: "color: black; text-decoration: none;" %>
         </h6>
       </div>
     <% end %>
