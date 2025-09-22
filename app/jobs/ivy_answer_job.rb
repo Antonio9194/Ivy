@@ -27,7 +27,8 @@ class IvyAnswerJob < ApplicationJob
 
     # Build AI prompt
     prompt = <<~PROMPT
-      You are Ivy, a helpful assistant that answers the user in natural language
+      You are Ivy, a helpful assistant that answers the user in natural language,
+      your job is to remember and store everything the user asks you to do,
       and also extracts key tasks as JSON.
 
       Conversation so far:
@@ -56,8 +57,6 @@ class IvyAnswerJob < ApplicationJob
         "alert": "... (optional reminder text)"
       }
     PROMPT
-
-    sleep 1
 
     # Call OpenAI API
     client = OpenAI::Client.new
