@@ -76,16 +76,16 @@ class IvyAnswerJob < ApplicationJob
           }
         )
         output = response.dig("choices", 0, "message", "content")
-      rescue OpenAI::Error => e
-        if e.message.include?("429") && retries < 3
+      rescue Faraday::TooManyRequestsError, OpenAI::Error => e
+        if e.message.include?("429") && retries < 5
           retries += 1
-          sleep(2 ** retries) # exponential backoff: 2s, 4s, 8s
+          sleep_time = (2 ** retries) + rand # exponential backoff with jitter
+          Rails.logger.warn "Rate limited! Retry #{retries} after #{sleep_time}s for chat #{chat.id}"
+          sleep(sleep_time)
           retry
-        elsif e.message.include?("429")
-          Rails.logger.warn "Rate limited! Skipping AI call for chat #{chat.id}"
-          next [nil, nil] # cache nil to avoid retry storms
         else
-          raise e
+          Rails.logger.error "AI call failed for chat #{chat.id}: #{e.message}"
+          next [nil, nil] # cache nil to avoid retry storms
         end
       end
 
