@@ -30,10 +30,13 @@ class IvyAnswerJob < ApplicationJob
         "Title: #{e.title}, Description: #{e.description}, Start: #{e.start_time.strftime('%b %d, %Y %H:%M')}, End: #{e.end_time ? e.end_time.strftime('%b %d, %Y %H:%M') : 'N/A'}"
       end.join("\n")
 
+      current_date = Date.today.strftime("%B %d, %Y")
+
       # Build AI prompt
       prompt = <<~PROMPT
         You are Ivy, a helpful assistant that answers the user in natural language,
         your job is to remember and store everything the user asks you to do,
+        also remember the actual date (today is #{current_date}),
         and also extract key tasks as JSON.
 
         Conversation so far:
