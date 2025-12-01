@@ -1,33 +1,25 @@
 # syntax = docker/dockerfile:1
 
-# ------------------------------
-# Base stage
-# ------------------------------
+# Make sure RUBY_VERSION matches the Ruby version in .ruby-version and Gemfile
 ARG RUBY_VERSION=3.3.5
-FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim AS base
+FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim as base
 
+# Rails app lives here
 WORKDIR /rails
 
+# Set production environment
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development"
 
-# ------------------------------
-# Build stage
-# ------------------------------
-FROM base AS build
 
-# Install build dependencies AND Node.js for asset compilation
+# Throw-away build stage to reduce size of final image
+FROM base as build
+
+# Install packages needed to build gems
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y \
-      build-essential \
-      git \
-      libpq-dev \
-      libvips \
-      pkg-config \
-      nodejs \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get install --no-install-recommends -y build-essential git libpq-dev libvips pkg-config
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
@@ -38,37 +30,33 @@ RUN bundle install && \
 # Copy application code
 COPY . .
 
-# Precompile bootsnap for faster boot
+# Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
-# Precompile Rails assets without requiring master key
+# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
-# ------------------------------
-# Final production image
-# ------------------------------
-FROM base AS final
 
-# Install only runtime dependencies
+# Final stage for app image
+FROM base
+
+# Install packages needed for deployment
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y \
-      curl \
-      libvips \
-      postgresql-client \
-    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
+    apt-get install --no-install-recommends -y curl libvips postgresql-client && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Copy built gems and application
+# Copy built artifacts: gems, application
 COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY --from=build /rails /rails
 
-# Add non-root user
+# Run and own only the runtime files as a non-root user for security
 RUN useradd rails --create-home --shell /bin/bash && \
     chown -R rails:rails db log storage tmp
 USER rails:rails
 
-# Entrypoint for Rails
+# Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Default Rails server
+# Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
 CMD ["./bin/rails", "server"]
